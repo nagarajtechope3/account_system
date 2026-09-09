@@ -59,12 +59,102 @@ function Sidebar({ activePage, setPage }) {
     );
 }
 
-function Topbar({ setPage }) {
+function CustomerModal({ isOpen, onClose, onAddCustomer }) {
+    if (!isOpen) return null;
+    const [name, setName] = useState('');
+    const [company, setCompany] = useState('');
+    const [email, setEmail] = useState('');
+    
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onAddCustomer({ id: 'C-' + Math.floor(Math.random()*1000), name, company, email, phone: '-', receivables: '₹0' });
+        onClose();
+        setName(''); setCompany(''); setEmail('');
+    };
+
+    return (
+        <div className="modal-overlay" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div className="modal-content" style={{background: 'white', padding: '32px', borderRadius: '8px', width: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+                    <h2 style={{margin: 0, fontSize: '18px', color: 'var(--text-main)'}}>New Customer</h2>
+                    <button onClick={onClose} style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)'}}><Icons.Close /></button>
+                </div>
+                <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                    <div>
+                        <label style={{display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', marginBottom: '8px'}}>Customer Name</label>
+                        <input type="text" required value={name} onChange={e => setName(e.target.value)} style={{width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box'}} />
+                    </div>
+                    <div>
+                        <label style={{display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', marginBottom: '8px'}}>Company Name</label>
+                        <input type="text" value={company} onChange={e => setCompany(e.target.value)} style={{width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box'}} />
+                    </div>
+                    <div>
+                        <label style={{display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', marginBottom: '8px'}}>Email</label>
+                        <input type="email" value={email} onChange={e => setEmail(e.target.value)} style={{width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box'}} />
+                    </div>
+                    <div style={{display: 'flex', gap: '12px', marginTop: '16px'}}>
+                        <button type="submit" className="btn-primary" style={{flex: 1}}>Save Customer</button>
+                        <button type="button" onClick={onClose} style={{flex: 1, padding: '10px', background: 'white', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-main)'}}>Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+function InvoiceModal({ isOpen, onClose, onAddInvoice, customers }) {
+    if (!isOpen) return null;
+    const [customer, setCustomer] = useState('');
+    const [amount, setAmount] = useState('');
+    
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onAddInvoice({ id: 'INV-' + Math.floor(Math.random()*10000), date: new Date().toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric'}), customer, status: 'Draft', statusClass: 'status-draft', amount: '₹' + amount, balance: '₹' + amount });
+        onClose();
+        setCustomer(''); setAmount('');
+    };
+
+    return (
+        <div className="modal-overlay" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div className="modal-content" style={{background: 'white', padding: '32px', borderRadius: '8px', width: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+                    <h2 style={{margin: 0, fontSize: '18px', color: 'var(--text-main)'}}>New Invoice</h2>
+                    <button onClick={onClose} style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)'}}><Icons.Close /></button>
+                </div>
+                <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                    <div>
+                        <label style={{display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', marginBottom: '8px'}}>Select Customer</label>
+                        <select required value={customer} onChange={e => setCustomer(e.target.value)} style={{width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box'}}>
+                            <option value="">-- Choose Customer --</option>
+                            {customers.map(c => <option key={c.id} value={c.company || c.name}>{c.company || c.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label style={{display: 'block', fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', marginBottom: '8px'}}>Total Amount (₹)</label>
+                        <input type="number" required value={amount} onChange={e => setAmount(e.target.value)} style={{width: '100%', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '4px', boxSizing: 'border-box'}} />
+                    </div>
+                    <div style={{display: 'flex', gap: '12px', marginTop: '16px'}}>
+                        <button type="submit" className="btn-primary" style={{flex: 1}}>Create Invoice</button>
+                        <button type="button" onClick={onClose} style={{flex: 1, padding: '10px', background: 'white', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-main)'}}>Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+function Topbar({ setPage, customers = [], invoices = [], historyLogs = [], onOpenCustomerModal, onOpenInvoiceModal }) {
     const [isOrgPanelOpen, setIsOrgPanelOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isSearchFilterOpen, setIsSearchFilterOpen] = useState(false);
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const searchResults = searchQuery ? [
+        ...customers.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.company.toLowerCase().includes(searchQuery.toLowerCase())).map(c => ({ type: 'Customer', text: c.name, sub: c.company })),
+        ...invoices.filter(i => i.id.toLowerCase().includes(searchQuery.toLowerCase()) || i.customer.toLowerCase().includes(searchQuery.toLowerCase())).map(i => ({ type: 'Invoice', text: i.id, sub: i.customer }))
+    ] : [];
 
     return (
         <>
@@ -84,78 +174,44 @@ function Topbar({ setPage }) {
                     </button>
                     {isHistoryOpen && (
                         <div className="history-dropdown">
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.Box /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Website Development</div>
-                                    <div className="history-sub">ITEM VARIANT</div>
+                            {historyLogs.length > 0 ? historyLogs.map(log => (
+                                <div key={log.id} className="history-item">
+                                    <div className="history-icon">{log.icon}</div>
+                                    <div className="history-details">
+                                        <div className="history-title">{log.title}</div>
+                                        <div className="history-sub">{log.sub}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.FileText /></div>
-                                <div className="history-details">
-                                    <div className="history-title">INV-000001</div>
-                                    <div className="history-sub">INVOICE</div>
-                                </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.Box /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Website Development</div>
-                                    <div className="history-sub">ITEM</div>
-                                </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.UserSmall /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Mr. Demo Customer</div>
-                                    <div className="history-sub">CONTACTS</div>
-                                </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.UserSmall /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Mr. Naga</div>
-                                    <div className="history-sub">CONTACTS</div>
-                                </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.Box /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Apple</div>
-                                    <div className="history-sub">ITEM VARIANT</div>
-                                </div>
-                            </div>
-                            <div className="history-item">
-                                <div className="history-icon"><Icons.Box /></div>
-                                <div className="history-details">
-                                    <div className="history-title">Apple</div>
-                                    <div className="history-sub">ITEM</div>
-                                </div>
-                            </div>
+                            )) : (
+                                <div style={{padding: '16px', textAlign: 'center', color: 'var(--text-muted)'}}>No recent activity</div>
+                            )}
                         </div>
                     )}
                 </div>
                 
                 <div className="search-bar-dark">
                     <Icons.Search />
-                    <div style={{position: 'relative'}}>
-                        <div style={{color: '#3b82f6', marginLeft: '6px', display: 'flex', cursor: 'pointer', position: 'relative', zIndex: isSearchFilterOpen ? 101 : 1}} onClick={() => setIsSearchFilterOpen(!isSearchFilterOpen)}>
-                            <Icons.ChevronDown />
-                        </div>
-                        {isSearchFilterOpen && (
-                            <div className="search-filter-dropdown">
-                                <div className="search-filter-item">Dashboard</div>
-                                <div className="search-filter-item">Customers</div>
-                                <div className="search-filter-item">Invoices</div>
-                                <div className="search-filter-item">Expenses</div>
-                                <div className="search-filter-item">Reports</div>
-                                <div className="search-filter-item">Banking</div>
+                    <div className="search-divider"></div>
+                    <div style={{position: 'relative', width: '100%'}}>
+                        <input 
+                            type="text" 
+                            placeholder="Search in Customers, Invoices..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{width: '100%', background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '13px'}}
+                        />
+                        {searchQuery && (
+                            <div className="search-dropdown" style={{position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: '6px', marginTop: '12px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: '300px', overflowY: 'auto'}}>
+                                {searchResults.length > 0 ? searchResults.map((res, i) => (
+                                    <div key={i} style={{padding: '12px 16px', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', background: 'white'}} onClick={() => { setSearchQuery(''); setIsSearchFilterOpen(false); setPage(res.type === 'Customer' ? 'customers' : 'invoices'); }}>
+                                        <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase'}}>{res.type}</div>
+                                        <div style={{fontWeight: 500, color: 'var(--text-main)'}}>{res.text}</div>
+                                        <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{res.sub}</div>
+                                    </div>
+                                )) : <div style={{padding: '16px', textAlign: 'center', color: 'var(--text-muted)', background: 'white'}}>No results found</div>}
                             </div>
                         )}
                     </div>
-                    <div className="search-divider"></div>
-                    <input type="text" placeholder="Search in Banking ( / )" />
                 </div>
             </div>
             <div className="topbar-right">
@@ -169,12 +225,12 @@ function Topbar({ setPage }) {
                         <div className="quick-add-mega-menu" style={{gridTemplateColumns: 'repeat(4, 200px)'}}>
                             <div className="mega-col">
                                 <div className="mega-heading"><Icons.UserSmall /> CUSTOMERS</div>
-                                <div className="mega-link"><Icons.Plus className="mega-plus" /> Add Customer</div>
+                                <div className="mega-link" style={{cursor: 'pointer'}} onClick={() => { setIsQuickAddOpen(false); onOpenCustomerModal(); }}><Icons.Plus className="mega-plus" /> Add Customer</div>
                                 <div className="mega-link"><Icons.Plus className="mega-plus" /> Add Vendor</div>
                             </div>
                             <div className="mega-col">
                                 <div className="mega-heading"><Icons.FileText /> INVOICES</div>
-                                <div className="mega-link"><Icons.Plus className="mega-plus" /> Create Invoice</div>
+                                <div className="mega-link" style={{cursor: 'pointer'}} onClick={() => { setIsQuickAddOpen(false); onOpenInvoiceModal(); }}><Icons.Plus className="mega-plus" /> Create Invoice</div>
                                 <div className="mega-link"><Icons.Plus className="mega-plus" /> Create Recurring Invoice</div>
                                 <div className="mega-link"><Icons.Plus className="mega-plus" /> Record Customer Payment</div>
                             </div>
@@ -212,7 +268,7 @@ function Topbar({ setPage }) {
                             </div>
                             <div className="profile-links">
                                 <div className="profile-link">My Account</div>
-                                <div className="profile-link">My Organizations</div>
+                                <div className="profile-link" onClick={() => { setIsProfileOpen(false); setPage('organizations'); }}>My Organizations</div>
                                 <div className="profile-link">Sign Out</div>
                             </div>
                         </div>
@@ -227,7 +283,7 @@ function Topbar({ setPage }) {
                     <div className="org-panel-header">
                         <h2>Organizations</h2>
                         <div className="org-panel-actions">
-                            <a href="#" className="manage-link"><Icons.Settings /> Manage</a>
+                            <a href="#" className="manage-link" onClick={(e) => { e.preventDefault(); setIsOrgPanelOpen(false); setPage('organizations'); }}><Icons.Settings /> Manage</a>
                             <button className="close-btn" onClick={() => setIsOrgPanelOpen(false)}><Icons.Close /></button>
                         </div>
                     </div>
@@ -347,13 +403,7 @@ function RecentTransactions() {
     );
 }
 
-function PendingInvoices() {
-    const invoices = [
-        { id: 'INV-0043', customer: 'Stark Ltd', date: 'Sep 10', amount: '₹4,500', status: '🟡 Pending', statusClass: 'status-pending' },
-        { id: 'INV-0044', customer: 'Wayne Ltd', date: 'Sep 05', amount: '₹850', status: '🔴 Overdue', statusClass: 'status-overdue' },
-        { id: 'INV-0046', customer: 'Oscorp', date: 'Sep 12', amount: '₹2,100', status: '🟡 Pending', statusClass: 'status-pending' },
-    ];
-
+function PendingInvoices({ invoices = [] }) {
     return (
         <div className="table-container">
             <div className="table-header">
@@ -371,13 +421,13 @@ function PendingInvoices() {
                     </tr>
                 </thead>
                 <tbody>
-                    {invoices.map((inv) => (
+                    {invoices.filter(i => i.status === 'Pending' || i.status === 'Overdue').slice(0, 5).map((inv) => (
                         <tr key={inv.id}>
                             <td style={{fontWeight: 500, color: 'var(--accent)'}}>{inv.id}</td>
                             <td>{inv.customer}</td>
                             <td>{inv.date}</td>
                             <td style={{fontWeight: 500}}>{inv.amount}</td>
-                            <td><span className={`status-badge ${inv.statusClass}`}>{inv.status}</span></td>
+                            <td><span className={`status-badge ${inv.statusClass}`}>{inv.status === 'Pending' ? '🟡 Pending' : inv.status === 'Overdue' ? '🔴 Overdue' : inv.status}</span></td>
                         </tr>
                     ))}
                 </tbody>
@@ -386,7 +436,7 @@ function PendingInvoices() {
     );
 }
 
-function MainContent() {
+function MainContent({ invoices }) {
     return (
         <main className="main-content">
             <div className="page-header">
@@ -425,21 +475,13 @@ function MainContent() {
             </div>
 
             <div className="bottom-grid">
-                <PendingInvoices />
+                <PendingInvoices invoices={invoices} />
             </div>
         </main>
     );
 }
 
-function CustomersPage() {
-    const customers = [
-        { id: 'C-001', name: 'Tony Stark', company: 'Stark Industries', email: 'tony@stark.com', phone: '+1 555-0100', receivables: '₹4,500' },
-        { id: 'C-002', name: 'Bruce Wayne', company: 'Wayne Enterprises', email: 'bruce@wayne.com', phone: '+1 555-0200', receivables: '₹850' },
-        { id: 'C-003', name: 'Norman Osborn', company: 'Oscorp', email: 'norman@oscorp.com', phone: '+1 555-0300', receivables: '₹2,100' },
-        { id: 'C-004', name: 'Peter Parker', company: 'Daily Bugle', email: 'peter@dailybugle.com', phone: '+1 555-0400', receivables: '₹0' },
-        { id: 'C-005', name: 'Lex Luthor', company: 'LexCorp', email: 'lex@lexcorp.com', phone: '+1 555-0500', receivables: '₹12,400' },
-    ];
-
+function CustomersPage({ customers = [], onOpenCustomerModal }) {
     return (
         <main className="main-content">
             <div className="page-header">
@@ -447,7 +489,7 @@ function CustomersPage() {
                     <h1>All Customers</h1>
                 </div>
                 <div className="page-actions">
-                    <button className="btn-primary">
+                    <button className="btn-primary" onClick={onOpenCustomerModal}>
                         <Icons.Plus /> New Customer
                     </button>
                 </div>
@@ -505,15 +547,7 @@ function CustomersPage() {
     );
 }
 
-function InvoicesPage() {
-    const invoices = [
-        { id: 'INV-0043', date: 'Sep 10, 2026', customer: 'Stark Industries', status: 'Pending', statusClass: 'status-pending', amount: '₹4,500', balance: '₹4,500' },
-        { id: 'INV-0044', date: 'Sep 05, 2026', customer: 'Wayne Enterprises', status: 'Overdue', statusClass: 'status-overdue', amount: '₹850', balance: '₹850' },
-        { id: 'INV-0045', date: 'Sep 01, 2026', customer: 'Acme Corp', status: 'Paid', statusClass: 'status-paid', amount: '₹1,200', balance: '₹0' },
-        { id: 'INV-0046', date: 'Aug 28, 2026', customer: 'Oscorp', status: 'Sent', statusClass: 'status-sent', amount: '₹2,100', balance: '₹2,100' },
-        { id: 'INV-0047', date: 'Aug 25, 2026', customer: 'Globex', status: 'Draft', statusClass: 'status-draft', amount: '₹3,200', balance: '₹3,200' },
-    ];
-
+function InvoicesPage({ invoices = [], onOpenInvoiceModal }) {
     return (
         <main className="main-content">
             <div className="page-header">
@@ -521,7 +555,7 @@ function InvoicesPage() {
                     <h1>All Invoices</h1>
                 </div>
                 <div className="page-actions">
-                    <button className="btn-primary">
+                    <button className="btn-primary" onClick={onOpenInvoiceModal}>
                         <Icons.Plus /> New Invoice
                     </button>
                 </div>
@@ -573,15 +607,7 @@ function InvoicesPage() {
     );
 }
 
-function ExpensesPage() {
-    const expenses = [
-        { id: 1, date: 'Sep 15, 2026', account: 'Office Supplies', ref: 'EXP-0012', vendor: 'Amazon', amount: '₹1,250', status: 'Non-Billable', statusClass: 'status-nonbillable' },
-        { id: 2, date: 'Sep 12, 2026', account: 'Travel', ref: 'EXP-0013', vendor: 'Uber', amount: '₹850', status: 'Billable', statusClass: 'status-billable' },
-        { id: 3, date: 'Sep 10, 2026', account: 'Meals and Entertainment', ref: 'EXP-0014', vendor: 'Starbucks', amount: '₹320', status: 'Reimbursed', statusClass: 'status-reimbursed' },
-        { id: 4, date: 'Sep 05, 2026', account: 'IT and Internet Expenses', ref: 'EXP-0015', vendor: 'AWS', amount: '₹4,500', status: 'Non-Billable', statusClass: 'status-nonbillable' },
-        { id: 5, date: 'Sep 01, 2026', account: 'Advertising and Marketing', ref: 'EXP-0016', vendor: 'Google Ads', amount: '₹12,000', status: 'Billable', statusClass: 'status-billable' },
-    ];
-
+function ExpensesPage({ expenses = [] }) {
     return (
         <main className="main-content">
             <div className="page-header">
@@ -719,13 +745,19 @@ function BankingPage() {
     );
 }
 
-function SettingsPage() {
+function SettingsPage({ setPage }) {
     return (
-        <main className="main-content">
-            <div className="page-header">
+        <main className="main-content" style={{ maxWidth: '1200px', margin: '0 auto', minHeight: '100vh' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div className="page-title">
                     <h1>Settings</h1>
                 </div>
+                <button 
+                    style={{ background: 'white', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                    onClick={() => setPage('dashboard')}
+                >
+                    <Icons.Close />
+                </button>
             </div>
 
             <div className="settings-container">
@@ -757,60 +789,41 @@ function SettingsPage() {
                 </div>
 
                 <div className="settings-section">
-                    <h3>Taxes & Compliance</h3>
+                    <h3>Module Settings</h3>
                     <div className="settings-grid">
                         <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Percent /></div>
+                            <div className="settings-card-icon"><Icons.Customers /></div>
                             <div className="settings-card-content">
-                                <h4>Taxes</h4>
-                                <p>Configure tax rates, exemptions, and tax authorities.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="settings-section">
-                    <h3>Customization</h3>
-                    <div className="settings-grid">
-                        <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Settings /></div>
-                            <div className="settings-card-content">
-                                <h4>Preferences</h4>
-                                <p>Customize module behaviors, numbering, and general preferences.</p>
+                                <h4>Customer Settings</h4>
+                                <p>Manage customer preferences and defaults.</p>
                             </div>
                         </div>
                         <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Palette /></div>
+                            <div className="settings-card-icon"><Icons.Invoices /></div>
                             <div className="settings-card-content">
-                                <h4>Templates</h4>
-                                <p>Design and customize PDF templates for invoices and quotes.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="settings-section">
-                    <h3>Data & Integrations</h3>
-                    <div className="settings-grid">
-                        <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Globe /></div>
-                            <div className="settings-card-content">
-                                <h4>Currencies</h4>
-                                <p>Add foreign currencies and manage base exchange rates.</p>
+                                <h4>Invoice Settings</h4>
+                                <p>Configure invoice numbering, terms, and templates.</p>
                             </div>
                         </div>
                         <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Link /></div>
+                            <div className="settings-card-icon"><Icons.Expenses /></div>
                             <div className="settings-card-content">
-                                <h4>Integrations</h4>
-                                <p>Connect with payment gateways and third-party apps.</p>
+                                <h4>Expense Settings</h4>
+                                <p>Set up expense categories and rules.</p>
                             </div>
                         </div>
                         <div className="settings-card">
-                            <div className="settings-card-icon"><Icons.Database /></div>
+                            <div className="settings-card-icon"><Icons.Reports /></div>
                             <div className="settings-card-content">
-                                <h4>Data Backup</h4>
-                                <p>Export and safely backup all your financial data.</p>
+                                <h4>Report Settings</h4>
+                                <p>Customize reporting periods and formats.</p>
+                            </div>
+                        </div>
+                        <div className="settings-card">
+                            <div className="settings-card-icon"><Icons.Banking /></div>
+                            <div className="settings-card-content">
+                                <h4>Bank Settings</h4>
+                                <p>Manage connected bank accounts and feeds.</p>
                             </div>
                         </div>
                     </div>
@@ -820,22 +833,127 @@ function SettingsPage() {
     );
 }
 
+function OrganizationsPage() {
+    return (
+        <main className="main-content">
+            <div className="page-header">
+                <div className="page-title">
+                    <h1>Organizations</h1>
+                </div>
+                <div className="page-actions">
+                    <button className="btn-primary">
+                        <Icons.Plus /> New Organization
+                    </button>
+                </div>
+            </div>
+            <div className="table-container">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Organization Name</th>
+                            <th>Organization ID</th>
+                            <th>Edition</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                                    <div style={{width: '32px', height: '32px', background: 'var(--bg-hover)', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)'}}>
+                                        <Icons.Building />
+                                    </div>
+                                    <span style={{fontWeight: 600, color: 'var(--text-main)'}}>thecruisersfamily</span>
+                                </div>
+                            </td>
+                            <td>60085861078</td>
+                            <td><span className="status-badge status-draft" style={{background: '#EEF2FF', color: 'var(--accent)'}}>Premium Trial</span></td>
+                            <td>Admin</td>
+                            <td><button className="btn-primary" style={{padding: '6px 16px', fontSize: '13px', background: 'white', color: 'var(--accent)', border: '1px solid var(--accent)'}}>Go to Org</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    );
+}
+
 function App() {
     const [activePage, setActivePage] = useState('dashboard');
+    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+    const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+
+    const [customers, setCustomers] = useState([
+        { id: 'C-001', name: 'Tony Stark', company: 'Stark Industries', email: 'tony@stark.com', phone: '+1 555-0100', receivables: '₹4,500' },
+        { id: 'C-002', name: 'Bruce Wayne', company: 'Wayne Enterprises', email: 'bruce@wayne.com', phone: '+1 555-0200', receivables: '₹850' },
+        { id: 'C-003', name: 'Norman Osborn', company: 'Oscorp', email: 'norman@oscorp.com', phone: '+1 555-0300', receivables: '₹2,100' },
+        { id: 'C-004', name: 'Peter Parker', company: 'Daily Bugle', email: 'peter@dailybugle.com', phone: '+1 555-0400', receivables: '₹0' },
+        { id: 'C-005', name: 'Lex Luthor', company: 'LexCorp', email: 'lex@lexcorp.com', phone: '+1 555-0500', receivables: '₹12,400' },
+    ]);
+
+    const [invoices, setInvoices] = useState([
+        { id: 'INV-0043', date: 'Sep 10, 2026', customer: 'Stark Industries', status: 'Pending', statusClass: 'status-pending', amount: '₹4,500', balance: '₹4,500' },
+        { id: 'INV-0044', date: 'Sep 05, 2026', customer: 'Wayne Enterprises', status: 'Overdue', statusClass: 'status-overdue', amount: '₹850', balance: '₹850' },
+        { id: 'INV-0045', date: 'Sep 01, 2026', customer: 'Acme Corp', status: 'Paid', statusClass: 'status-paid', amount: '₹1,200', balance: '₹0' },
+        { id: 'INV-0046', date: 'Aug 28, 2026', customer: 'Oscorp', status: 'Sent', statusClass: 'status-sent', amount: '₹2,100', balance: '₹2,100' },
+        { id: 'INV-0047', date: 'Aug 25, 2026', customer: 'Globex', status: 'Draft', statusClass: 'status-draft', amount: '₹3,200', balance: '₹3,200' },
+    ]);
+
+    const [expenses, setExpenses] = useState([
+        { id: 1, date: 'Sep 15, 2026', account: 'Office Supplies', ref: 'EXP-0012', vendor: 'Amazon', amount: '₹1,250', status: 'Non-Billable', statusClass: 'status-nonbillable' },
+        { id: 2, date: 'Sep 12, 2026', account: 'Travel', ref: 'EXP-0013', vendor: 'Uber', amount: '₹850', status: 'Billable', statusClass: 'status-billable' },
+        { id: 3, date: 'Sep 10, 2026', account: 'Meals and Entertainment', ref: 'EXP-0014', vendor: 'Starbucks', amount: '₹320', status: 'Reimbursed', statusClass: 'status-reimbursed' },
+        { id: 4, date: 'Sep 05, 2026', account: 'IT and Internet Expenses', ref: 'EXP-0015', vendor: 'AWS', amount: '₹4,500', status: 'Non-Billable', statusClass: 'status-nonbillable' },
+        { id: 5, date: 'Sep 01, 2026', account: 'Advertising and Marketing', ref: 'EXP-0016', vendor: 'Google Ads', amount: '₹12,000', status: 'Billable', statusClass: 'status-billable' },
+    ]);
+
+    const [historyLogs, setHistoryLogs] = useState([
+        { id: 1, icon: <Icons.Box />, title: 'Website Development', sub: 'ITEM VARIANT' },
+        { id: 2, icon: <Icons.FileText />, title: 'INV-000001', sub: 'INVOICE' },
+        { id: 3, icon: <Icons.UserSmall />, title: 'Mr. Demo Customer', sub: 'CONTACTS' },
+    ]);
+
+    const handleAddCustomer = (newCustomer) => {
+        setCustomers(prev => [newCustomer, ...prev]);
+        setHistoryLogs(prev => [{ id: Date.now(), icon: <Icons.UserSmall />, title: newCustomer.name, sub: 'NEW CUSTOMER' }, ...prev]);
+    };
+
+    const handleAddInvoice = (newInvoice) => {
+        setInvoices(prev => [newInvoice, ...prev]);
+        setHistoryLogs(prev => [{ id: Date.now(), icon: <Icons.FileText />, title: newInvoice.id, sub: 'NEW INVOICE' }, ...prev]);
+    };
+
+    if (activePage === 'settings') {
+        return (
+            <div style={{ width: '100vw', height: '100vh', overflowY: 'auto', backgroundColor: 'var(--bg-main)' }}>
+                <SettingsPage setPage={setActivePage} />
+            </div>
+        );
+    }
 
     return (
         <div className="app-container">
-            <Topbar setPage={setActivePage} />
+            <Topbar 
+                setPage={setActivePage} 
+                customers={customers} 
+                invoices={invoices} 
+                historyLogs={historyLogs} 
+                onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+                onOpenInvoiceModal={() => setIsInvoiceModalOpen(true)}
+            />
             <div className="main-wrapper">
                 <Sidebar activePage={activePage} setPage={setActivePage} />
-                {activePage === 'dashboard' && <MainContent />}
-                {activePage === 'customers' && <CustomersPage />}
-                {activePage === 'invoices' && <InvoicesPage />}
-                {activePage === 'expenses' && <ExpensesPage />}
+                {activePage === 'dashboard' && <MainContent invoices={invoices} />}
+                {activePage === 'customers' && <CustomersPage customers={customers} onOpenCustomerModal={() => setIsCustomerModalOpen(true)} />}
+                {activePage === 'invoices' && <InvoicesPage invoices={invoices} onOpenInvoiceModal={() => setIsInvoiceModalOpen(true)} />}
+                {activePage === 'expenses' && <ExpensesPage expenses={expenses} />}
                 {activePage === 'reports' && <ReportsPage />}
                 {activePage === 'banking' && <BankingPage />}
-                {activePage === 'settings' && <SettingsPage />}
+                {activePage === 'organizations' && <OrganizationsPage />}
             </div>
+            <CustomerModal isOpen={isCustomerModalOpen} onClose={() => setIsCustomerModalOpen(false)} onAddCustomer={handleAddCustomer} />
+            <InvoiceModal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} onAddInvoice={handleAddInvoice} customers={customers} />
         </div>
     );
 }
